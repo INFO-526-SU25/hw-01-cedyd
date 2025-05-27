@@ -1,9 +1,13 @@
 ---
 title: "HW 01"
-author: "INSERT YOUR NAME HERE"
+author: "Cedric Destin"
 format: 
   html:
     embed-resources: true
+    execute:
+      warning: false
+      message: false
+      error: false
 toc: true
 ---
 
@@ -14,7 +18,9 @@ if (!require("pacman"))
   install.packages("pacman")
 
 # use this line for installing/loading
-# pacman::p_load() 
+pacman::p_load(tidyverse,
+               glue,
+               scales) 
 
 devtools::install_github("tidyverse/dsbox")
 ```
@@ -22,12 +28,31 @@ devtools::install_github("tidyverse/dsbox")
 ## 1 - Road traffic accidents in Edinburgh
 
 ```{r label-me-1}
-
+accidents <- read_csv("/cloud/project/data/accidents.csv")
+glimpse(accidents)
+accidents <- accidents |> 
+  mutate (
+    day = case_when(
+      day_of_week %in% c("Monday", "Tuesday", "Wednesday", "Thursday", "Friday") ~ "Weekday",
+      TRUE ~ "Weekend"
+    )
+  )
+glimpse(accidents)
+accidents |>
+  count(id, time, severity, day) |>
+  ggplot(aes(x = time, fill = severity)) + 
+  geom_density(alpha = 0.6) +
+  facet_wrap(~ day, scales = "free_y", ncol = 1, nrow = 2) +
+  scale_fill_manual("Severity", values = c("purple", "cyan", "yellow")) +
+  labs(title = "Number of accidents throught the day",
+       x = "Time of Day",
+       y = "Density")
 ```
 
 ## 2 - NYC marathon winners
 
 ```{r label-me-2}
+
 
 ```
 
