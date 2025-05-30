@@ -14,22 +14,26 @@ toc: true
 ## 0 - Setup
 
 ```{r setup}
+options(warn=-1)
 if (!require("pacman")) 
   install.packages("pacman")
 
 # use this line for installing/loading
 pacman::p_load(tidyverse,
                glue,
-               scales) 
+               scales,
+               openintro,
+               gridExtra,
+               ggrepel,
+               ggmap) 
 
 devtools::install_github("tidyverse/dsbox")
 ```
 
 ## 1 - Road traffic accidents in Edinburgh
 
-```{r label-me-1}
+```{r}
 accidents <- read_csv("/cloud/project/data/accidents.csv")
-glimpse(accidents)
 accidents <- accidents |> 
   mutate (
     day = case_when(
@@ -42,22 +46,374 @@ accidents |>
   count(id, time, severity, day) |>
   ggplot(aes(x = time, fill = severity)) + 
   geom_density(alpha = 0.6) +
-  facet_wrap(~ day, scales = "free_y", ncol = 1, nrow = 2) +
-  scale_fill_manual("Severity", values = c("purple", "cyan", "yellow")) +
+  facet_wrap(~ day, ncol = 1, nrow = 2) +
+  scale_fill_manual("Severity", values = c("#AA93B0", "#9ECAC8", "#FEF39F")) +
+  # 1 https://www.sthda.com/english/wiki/ggplot2-density-plot-quick-start-guide-r-software-and-data-visualization
   labs(title = "Number of accidents throught the day",
+       subtitle = "By day of the week and severity",
        x = "Time of Day",
        y = "Density")
 ```
 
+```{r Q1-1}
+# The data shows fatal accidents, Serious accidents and Slight accidents throughout the
+# day for the Weekdays as well as the Weekends, for the city of Edinburgh, Scotland
+# during the year of 2018. 
+
+# The plot is grouped by the accident's severity (Fatal, Serious or Slight) 
+# by using different colors then, it is grouped by the Type of weekday as two different
+# plots, either for Weekday or Weekend.
+
+# Using this approach we can conclude the following regarding the Severity of 
+# the accidents and the type of day:
+# Fatal accidents only occured during weekdays, and the majority of them occur between
+# 08:00 and 16:00. This is fascinating, one can infer that these accidents are 
+# happening while someone is commuting for work, dropping their childrend to school
+# or they are commuting to school. On another note, it is interesting that the number 
+# of fatal accidents dips in the afternoon, between 16:00 and 20:00, and increases 
+# again at night between 20:00 and 23:59. 
+
+# On the other hand, Serious accidents occured in both weekdays and weekends. 
+# While they peaked during weekdays between 16:00 and 20:00, Serious accidents increase
+# starting at 04:00 during Weekdays and stop increasing or plato between 11:00 and 12:00
+# during weekdays. On the other hand, Serious accidents increase during the weekend from
+# 00:00, and peak between 16:00 and 21:00. 
+
+# Finally, Slight accidents occur approximately for the same amount during the weekend
+# and the weekday. During the weekdays, we mainly occured between 07:00 and 20:00, with
+# a small dip at 10:00. Serious accidents behaved in a 
+# similar manner but the dip occured at 12:00 in the weekday. This dip is likely due to 
+# drivers being at work. At last, we see that the Slight accidents during the weekend peak peak between 12:00 an 19:00
+
+# Sources:
+# 1 https://www.sthda.com/english/wiki/ggplot2-density-plot-quick-start-guide-r-software-and-data-visualization
+# 2 https://chromewebstore.google.com/detail/colorzilla/bhlhnicpbhignbdhedgjhgdocnmhomnp
+```
+
 ## 2 - NYC marathon winners
 
-```{r label-me-2}
+```{r}
+library(openintro)
+library(ggplot2)
+nyc_marathon_data <- nyc_marathon %>% filter(!is.na(time_hrs))
 
+```
 
+```{r}
+ggplot(nyc_marathon_data, 
+       aes(x=time)) +
+  labs(title = "Histogram of New York City Marathon Winners")+
+  geom_histogram(bins = 20)
+# 1 https://ggplot2.tidyverse.org/reference/geom_histogram.html
+```
+
+```{r}
+ggplot(nyc_marathon_data, aes(x=time)) + 
+  geom_boxplot() + 
+  labs(
+    y = NULL,
+    x = "Finish time",
+    title = "Boxplot of New York City Marathon Winners"
+  ) +
+  theme_minimal()
+# 2 https://ggplot2.tidyverse.org/reference/geom_boxplot.html
+```
+
+```{r}
+# Looking at the histogram, we can clearly see that there are two peaks, or two clusters
+# at times: 2:10:00 and 2:30:00, which is something that you do not see when looking at
+# the box plot.
+
+# On the other hand, the box plot shows where the median is located by using the bar, 
+# which is something that we do not clearly see on the histogram.
+```
+
+```{r Q2.b-1}
+ggplot(nyc_marathon_data, aes(y=time_hrs, fill = division)) + 
+  geom_boxplot() + 
+  facet_wrap(~ division, ncol = 2, nrow = 1) +
+  scale_fill_manual(values = c("blue", "pink"))
+# 3 https://datavizaz.org/slides/04/04-wrangle-2.html?print-pdf=#/title-slide
+```
+
+```{r}
+# When comparing the women vs the the men's marathon time, we see that the woman's time
+# is longer by ~30 minutes on average. Also, wecan also note that the women's have a
+# wider distribution of outliers.
+```
+
+```{r}
+# I thought I could bring the two plots into one plot, instead of separating the plots
+# by women vs men. This helped in the data-to-ink-ratio by removing an unecessary axis.
+
+ggplot(nyc_marathon_data, aes(y=time_hrs, fill = division)) + 
+  geom_boxplot() + 
+  scale_fill_manual(values = c("blue", "pink"))
+```
+
+```{r}
+ggplot(nyc_marathon_data,
+       aes(x = year,
+           y = time,
+           group = division,
+           color = division,
+           shape = division)) +
+  geom_point() +
+  geom_line(linewidth = 0.5) +
+  # https://www.sthda.com/english/wiki/ggplot2-line-plot-quick-start-guide-r-software-and-data-visualization
+  labs(x = "Year", 
+       y = "Finish Time",
+       title = "NYC Marathon Finish Times Over the Years",
+       subtitle = "By Division") +      
+  scale_color_manual(values = c("skyblue", "pink")) +
+  scale_shape_manual(values = c("circle", "triangle")) +
+  theme_minimal()
+# https://ggplot2.tidyverse.org/reference/ggtheme.html
+
+```
+
+```{r}
+# Another set of very interesting data! This shows that as time progressed, 
+# athletes improved on the their times, with a massive jump in the late 70s and early
+# 80s... It is also worth to note the outlier in 2020, where during Covid the winning
+# time regressed to a time from the 70's
 ```
 
 ## 3 - US counties
 
-## 4 - Rental apartments in SF
+```{r }
+library(openintro)
+library(ggplot2)
+county_data <- county
+```
+
+```{r}
+options(warn=-1)
+ggplot(county_data) +
+  geom_point(aes(x = median_edu, y = median_hh_income)) +
+  geom_boxplot(aes(x = smoking_ban, y = pop2017))
+```
+
+```{r }
+# a. What does the following code do? Does it work? Does it make sense? Why/why not?
+# The cell is attempting to plot a scatterplot and a box plot on the same plot
+# This ends up not working since the scatterplot 
+# and the boxplot do not use the same variable for the x-axis
+# Hence the x-axis is labeled median_edu 
+# but it is also showing the smoking_ban information.
+# Therefore, it does not make sense.
+```
+
+```{r}
+ggplot(county %>% filter(!is.na(median_edu))) + 
+  geom_point(aes(x = homeownership, y = poverty)) + 
+  facet_grid(median_edu ~ .)
+```
+
+```{r}
+ggplot(county %>% filter(!is.na(median_edu))) + 
+  geom_point(aes(x = homeownership, y = poverty)) + 
+  facet_grid(. ~ median_edu)
+```
+
+```{r}
+# b. Which of the following two plots makes it easier to compare poverty levels 
+# (poverty) across people from different median education levels (median_edu)? 
+# What does this say about when to place a faceting variable across rows or columns?
+
+# The second plot is slightly easier to read because the x-axis is more stretched out 
+# than the x-axis on the first plot, it shows that we must take into account 
+# where we place our faceting so that the axis does not get too crowded...
+```
+
+```{r fig.height=6, fig.width=10}
+library(gridExtra)
+plot1 <- ggplot(county %>% filter(!is.na(poverty)), 
+            aes(x = homeownership, y = poverty)) +
+            geom_point() + 
+            labs(title = "Plot A")
+plot2 <- ggplot(county %>% filter(!is.na(poverty)), 
+            aes(x = homeownership, y = poverty)) +
+            geom_point() +
+            geom_smooth(method = "loess", se = FALSE, color = "blue") +
+            labs(title = "Plot B")
+plot3 <- ggplot(county %>% filter(!is.na(poverty)), 
+            aes(x = homeownership, y = poverty, group = metro)) +
+            geom_point() +
+            geom_smooth(method = "loess", se = FALSE, color = "green") +
+            labs(title = "Plot C")
+plot4 <- ggplot(county %>% filter(!is.na(poverty)), 
+            aes(x = homeownership, y = poverty, group = metro)) +
+            geom_smooth(method = "loess", se = FALSE, color = "blue") +
+            geom_point() +
+            labs(title = "Plot D")
+plot5 <- ggplot(county %>% filter(!is.na(poverty)), 
+            aes(x = homeownership, 
+                y = poverty, 
+                group = metro, 
+                linetype = metro, 
+                color = metro)) +
+            geom_point() +
+            geom_smooth(method = "loess", se = FALSE, color = "blue") +
+            labs(title = "Plot E")
+plot6 <- ggplot(county %>% filter(!is.na(poverty)), 
+            aes(x = homeownership, 
+                y = poverty, 
+                group = metro, 
+                color = metro)) +
+            geom_point() +
+            geom_smooth(method = "loess", se = FALSE) +
+            labs(title = "Plot F")
+plot7 <- ggplot(county %>% filter(!is.na(poverty)), 
+            aes(x = homeownership, 
+                y = poverty, 
+                color = metro)) +
+            geom_point() +
+            geom_smooth(method = "loess", se = FALSE, aes(group = "all")) +
+            labs(title = "Plot G")
+plot8 <- ggplot(county %>% filter(!is.na(poverty)), 
+            aes(x = homeownership, 
+                y = poverty, 
+                color = metro)) +
+            geom_point() +
+            labs(title = "Plot H")
+grid.arrange(plot1, plot2, plot3, plot4, plot5, plot6, plot7, plot8, ncol=2, nrow=4)
+
+# https://stackoverflow.com/questions/65985705/defining-grid-arrange-so-the-third-plot-is-in-the-middle
+```
+
+## 4 - Credit card balances
+
+```{r}
+credit_data <- read_csv("/cloud/project/data/credit.csv")
+ggplot2::theme_set(ggplot2::theme_minimal(base_size = 14))
+ggplot(credit_data, 
+            aes(x = income, y = balance, color=student, shape = student)) +
+            geom_point() +
+            geom_smooth(method = "lm", se = FALSE) + 
+            facet_grid(student ~ married,
+                       labeller = label_both) +
+            scale_shape_manual(values = c("circle", "triangle")) +
+            scale_color_manual(values = c("#96BCDB", "#EE9493")) +
+            scale_y_continuous(labels = label_dollar()) +
+            guides(colour = "none", shape = "none") +
+            scale_x_continuous(labels = function(x) paste0("$", x, "K")) +
+            ylab("Credit card balance") +
+            xlab("Income") +
+            theme_bw()
+# https://ggplot2.tidyverse.org/reference/ggtheme.html
+```
+
+```{r}
+credit_data <- credit_data |>
+  mutate(credid_utilization = balance / limit)
+
+ggplot(credit_data, 
+            aes(x = income, y = credid_utilization, color=student, shape = student)) +
+            geom_point() +
+            geom_smooth(method = "lm", se = FALSE) + 
+            facet_grid(student ~ married,
+                       labeller = label_both) +
+            scale_shape_manual(values = c("circle", "triangle")) +
+            scale_color_manual(values = c("#96BCDB", "#EE9493")) +
+            guides(colour = "none", shape = "none") +
+            scale_y_continuous(labels = label_percent()) +
+            scale_x_continuous(labels = function(x) paste0("$", x, "K")) +
+            ylab("Credit card balance") +
+            xlab("Income") +
+            theme_bw()
+# https://ggplot2.tidyverse.org/reference/ggtheme.html
+```
 
 ## 5 - Napoleon’s march.
+
+```{r}
+napoleon_data  <- read_rds("/cloud/project/data/napoleon.rds")
+
+```
+
+```{r}
+# In this problem, I answered the question with the help of:
+# http://euclid.psych.yorku.ca/www/psy6135/tutorials/Minard.html
+```
+
+```{r}
+library(ggplot2)
+library(scales)        # additional formatting for scales
+library(grid)          # combining plots
+library(gridExtra)     # combining plots
+library(dplyr)         # tidy data manipulations
+library(ggrepel)
+# In this cell, we start by pulling the libraries that will be used.
+```
+
+```{r fig.height=3.5, fig.width=10}
+ggplot(napoleon_data$troop, aes(long, lat)) + 
+  geom_path(aes(size = survivors, colour = direction, group = group), 
+# This is the usual function for plotting the path that Napoleon and his army took.
+# The colors show the direction they took and the size of the path shows 
+# the size of the army
+            lineend = "round") + 
+# The end of the lines are made roung to that they connect better to each other
+  scale_color_manual("Direction",
+                     values = c("#E8CBAB", "#1F1A1B"),
+                     labels=c("Advance", "Retreat")
+# The color of the direction is changed to map the picture
+) + 
+  geom_point(data = napoleon_data$cities) + # This simply adds the cities based on
+  # the lat and lon of the city
+  geom_text_repel(data = napoleon_data$cities, 
+                  aes(label = city), 
+                  size = 3, color = "red") + 
+  # This is a nice function used to plot the name of the city away from the lat and lot
+  # markers
+  coord_cartesian(xlim = c(24, 38)) + 
+  labs(x = NULL, y = NULL) + 
+  guides(size = FALSE) +
+  theme_void()
+# Remove all themes
+plot_troops <- last_plot()
+# This is nice, it takes the last plot and saved it to a variable
+```
+
+```{r}
+napoleon_data$temperatures <- napoleon_data$temperatures |>
+  mutate(label = paste0(temp, "° ", date))
+# This past the temperature symbol to the data
+head(napoleon_data$temperatures$label)
+```
+
+```{r fig.height=1.2, fig.width=10}
+ggplot(napoleon_data$temperatures, 
+       aes(long, temp, size = temp)) +
+  geom_path(color = "grey", size = 1.5) + 
+  geom_point(size = 1) + 
+  geom_text_repel(aes(label = label), size = 2.5) +
+  coord_cartesian(xlim = c(24, 38)) +
+  labs(x = NULL, y = "Temperature") + 
+  theme_bw() +
+  theme(panel.grid.major.x = element_blank(),
+        panel.grid.major.y = element_blank(),
+        axis.text.x = element_blank(), axis.ticks = element_blank(),
+        panel.border = element_blank()
+        )
+# This plots the temperature as a line, adds markers to the line and adds 
+# the temperature to the markers
+plot_temp <- last_plot()
+```
+
+```{r fig.height=4.7, fig.width=10}
+grid.arrange(plot_troops, plot_temp,
+          top=textGrob("Napolean's Russian Campaign"))
+grid.rect(width = .99, height = .99, 
+          gp = gpar(lwd = 2, col = "gray", fill = NA))
+
+# This merges the temperature and the troop plots
+
+```
+
+```{r}
+# Ultimately this was a very nice problem to solve, I wanted to add a geographical map
+# to it, but I will not have to time to figure out why ggmap was not able to insert the
+# map
+```
