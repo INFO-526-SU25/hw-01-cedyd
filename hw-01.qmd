@@ -25,7 +25,11 @@ pacman::p_load(tidyverse,
                openintro,
                gridExtra,
                ggrepel,
-               ggmap) 
+               ggmap,
+               here,
+               ggplot2,
+               grid,
+               dplyr) 
 
 devtools::install_github("tidyverse/dsbox")
 ```
@@ -33,7 +37,7 @@ devtools::install_github("tidyverse/dsbox")
 ## 1 - Road traffic accidents in Edinburgh
 
 ```{r}
-accidents <- read_csv("/cloud/project/data/accidents.csv")
+accidents <- read_csv(here("data", "accidents.csv"), show_col_types = FALSE)
 accidents <- accidents |> 
   mutate (
     day = case_when(
@@ -41,7 +45,6 @@ accidents <- accidents |>
       TRUE ~ "Weekend"
     )
   )
-glimpse(accidents)
 accidents |>
   count(id, time, severity, day) |>
   ggplot(aes(x = time, fill = severity)) + 
@@ -55,48 +58,22 @@ accidents |>
        y = "Density")
 ```
 
-```{r Q1-1}
-# The data shows fatal accidents, Serious accidents and Slight accidents throughout the
-# day for the Weekdays as well as the Weekends, for the city of Edinburgh, Scotland
-# during the year of 2018. 
+The data shows fatal accidents, Serious accidents and Slight accidents throughout the day for the Weekdays as well as the Weekends, for the city of Edinburgh, Scotland during the year of 2018.
 
-# The plot is grouped by the accident's severity (Fatal, Serious or Slight) 
-# by using different colors then, it is grouped by the Type of weekday as two different
-# plots, either for Weekday or Weekend.
+The plot is grouped by the accident's severity (Fatal, Serious or Slight) by using different colors then, it is grouped by the Type of weekday as two different plots, either for Weekday or Weekend.
 
-# Using this approach we can conclude the following regarding the Severity of 
-# the accidents and the type of day:
-# Fatal accidents only occured during weekdays, and the majority of them occur between
-# 08:00 and 16:00. This is fascinating, one can infer that these accidents are 
-# happening while someone is commuting for work, dropping their childrend to school
-# or they are commuting to school. On another note, it is interesting that the number 
-# of fatal accidents dips in the afternoon, between 16:00 and 20:00, and increases 
-# again at night between 20:00 and 23:59. 
+Using this approach we can conclude the following regarding the Severity of the accidents and the type of day: Fatal accidents only occurred during weekdays, and the majority of them occur between 08:00 and 16:00. This is fascinating, one can infer that these accidents are happening while someone is commuting for work, dropping their children to school or they are commuting to school. On another note, it is interesting that the number of fatal accidents dips in the afternoon, between 16:00 and 20:00, and increases again at night between 20:00 and 23:59.
 
-# On the other hand, Serious accidents occured in both weekdays and weekends. 
-# While they peaked during weekdays between 16:00 and 20:00, Serious accidents increase
-# starting at 04:00 during Weekdays and stop increasing or plato between 11:00 and 12:00
-# during weekdays. On the other hand, Serious accidents increase during the weekend from
-# 00:00, and peak between 16:00 and 21:00. 
+On the other hand, Serious accidents occurred in both weekdays and weekends. While they peaked during weekdays between 16:00 and 20:00, Serious accidents increase starting at 04:00 during Weekdays and stop increasing or plateau between 11:00 and 12:00 during weekdays. On the other hand, Serious accidents increase during the weekend from 00:00, and peak between 16:00 and 21:00.
 
-# Finally, Slight accidents occur approximately for the same amount during the weekend
-# and the weekday. During the weekdays, we mainly occured between 07:00 and 20:00, with
-# a small dip at 10:00. Serious accidents behaved in a 
-# similar manner but the dip occured at 12:00 in the weekday. This dip is likely due to 
-# drivers being at work. At last, we see that the Slight accidents during the weekend peak peak between 12:00 an 19:00
+Finally, Slight accidents occur approximately for the same amount during the weekend and the weekday. During the weekdays, we mainly occurred between 07:00 and 20:00, with a small dip at 10:00. Serious accidents behaved in a similar manner but the dip occured at 12:00 in the weekday. This dip is likely due to drivers being at work. At last, we see that the Slight accidents during the weekend peak peak between 12:00 an 19:00
 
-# Sources:
-# 1 https://www.sthda.com/english/wiki/ggplot2-density-plot-quick-start-guide-r-software-and-data-visualization
-# 2 https://chromewebstore.google.com/detail/colorzilla/bhlhnicpbhignbdhedgjhgdocnmhomnp
-```
+Sources: 1 <https://www.sthda.com/english/wiki/ggplot2-density-plot-quick-start-guide-r-software-and-data-visualization> 2 <https://chromewebstore.google.com/detail/colorzilla/bhlhnicpbhignbdhedgjhgdocnmhomnp>
 
 ## 2 - NYC marathon winners
 
 ```{r}
-library(openintro)
-library(ggplot2)
 nyc_marathon_data <- nyc_marathon %>% filter(!is.na(time_hrs))
-
 ```
 
 ```{r}
@@ -119,14 +96,9 @@ ggplot(nyc_marathon_data, aes(x=time)) +
 # 2 https://ggplot2.tidyverse.org/reference/geom_boxplot.html
 ```
 
-```{r}
-# Looking at the histogram, we can clearly see that there are two peaks, or two clusters
-# at times: 2:10:00 and 2:30:00, which is something that you do not see when looking at
-# the box plot.
+Looking at the histogram, we can clearly see that there are two peaks, or two clusters at times: 2:10:00 and 2:30:00, which is something that you do not see when looking at the box plot.
 
-# On the other hand, the box plot shows where the median is located by using the bar, 
-# which is something that we do not clearly see on the histogram.
-```
+On the other hand, the box plot shows where the median is located by using the bar, which is something that we do not clearly see on the histogram.
 
 ```{r Q2.b-1}
 ggplot(nyc_marathon_data, aes(y=time_hrs, fill = division)) + 
@@ -136,20 +108,17 @@ ggplot(nyc_marathon_data, aes(y=time_hrs, fill = division)) +
 # 3 https://datavizaz.org/slides/04/04-wrangle-2.html?print-pdf=#/title-slide
 ```
 
-```{r}
-# When comparing the women vs the the men's marathon time, we see that the woman's time
-# is longer by ~30 minutes on average. Also, wecan also note that the women's have a
-# wider distribution of outliers.
-```
+When comparing the women vs the the men's marathon time, we see that the woman's time is longer by \~30 minutes on average. Also, wecan also note that the women's have a wider distribution of outliers.
 
 ```{r}
-# I thought I could bring the two plots into one plot, instead of separating the plots
-# by women vs men. This helped in the data-to-ink-ratio by removing an unecessary axis.
 
 ggplot(nyc_marathon_data, aes(y=time_hrs, fill = division)) + 
   geom_boxplot() + 
   scale_fill_manual(values = c("blue", "pink"))
+
 ```
+
+I thought I could bring the two plots into one plot, instead of separating the plots by women vs men. This helped in the data-to-ink-ratio by removing an unnecessary axis.
 
 ```{r}
 ggplot(nyc_marathon_data,
@@ -172,18 +141,11 @@ ggplot(nyc_marathon_data,
 
 ```
 
-```{r}
-# Another set of very interesting data! This shows that as time progressed, 
-# athletes improved on the their times, with a massive jump in the late 70s and early
-# 80s... It is also worth to note the outlier in 2020, where during Covid the winning
-# time regressed to a time from the 70's
-```
+Another set of very interesting data! This shows that as time progressed, athletes improved on the their times, with a massive jump in the late 70s and early 80s... It is also worth to note the outlier in 2020, where during Covid the winning time regressed to a time from the 70's
 
 ## 3 - US counties
 
 ```{r }
-library(openintro)
-library(ggplot2)
 county_data <- county
 ```
 
@@ -194,15 +156,7 @@ ggplot(county_data) +
   geom_boxplot(aes(x = smoking_ban, y = pop2017))
 ```
 
-```{r }
-# a. What does the following code do? Does it work? Does it make sense? Why/why not?
-# The cell is attempting to plot a scatterplot and a box plot on the same plot
-# This ends up not working since the scatterplot 
-# and the boxplot do not use the same variable for the x-axis
-# Hence the x-axis is labeled median_edu 
-# but it is also showing the smoking_ban information.
-# Therefore, it does not make sense.
-```
+a\. What does the following code do? Does it work? Does it make sense? Why/why not? The cell is attempting to plot a scatterplot and a box plot on the same plot. This ends up not working since the scatter-plot and the boxplot do not use the same variable for the x-axis. Hence the x-axis is labeled median_edu but it is also showing the smoking_ban information. Therefore, it does not make sense.
 
 ```{r}
 ggplot(county %>% filter(!is.na(median_edu))) + 
@@ -216,18 +170,10 @@ ggplot(county %>% filter(!is.na(median_edu))) +
   facet_grid(. ~ median_edu)
 ```
 
-```{r}
-# b. Which of the following two plots makes it easier to compare poverty levels 
-# (poverty) across people from different median education levels (median_edu)? 
-# What does this say about when to place a faceting variable across rows or columns?
-
-# The second plot is slightly easier to read because the x-axis is more stretched out 
-# than the x-axis on the first plot, it shows that we must take into account 
-# where we place our faceting so that the axis does not get too crowded...
-```
+b\. Which of the following two plots makes it easier to compare poverty levels (poverty) across people from different median education levels (median_edu)? What does this say about when to place a faceting variable across rows or columns? The second plot is slightly easier to read because the x-axis is more stretched out than the x-axis on the first plot, it shows that we must take into account where we place our faceting so that the axis does not get too crowded...
 
 ```{r fig.height=6, fig.width=10}
-library(gridExtra)
+#| warning: false
 plot1 <- ggplot(county %>% filter(!is.na(poverty)), 
             aes(x = homeownership, y = poverty)) +
             geom_point() + 
@@ -235,41 +181,39 @@ plot1 <- ggplot(county %>% filter(!is.na(poverty)),
 plot2 <- ggplot(county %>% filter(!is.na(poverty)), 
             aes(x = homeownership, y = poverty)) +
             geom_point() +
-            geom_smooth(method = "loess", se = FALSE, color = "blue") +
+            geom_smooth(formula = y ~ x, method = "loess", se = FALSE, color = "blue") +
             labs(title = "Plot B")
 plot3 <- ggplot(county %>% filter(!is.na(poverty)), 
             aes(x = homeownership, y = poverty, group = metro)) +
             geom_point() +
-            geom_smooth(method = "loess", se = FALSE, color = "green") +
+            geom_smooth(formula = y ~ x, method = "loess", se = FALSE, color = "green") +
             labs(title = "Plot C")
 plot4 <- ggplot(county %>% filter(!is.na(poverty)), 
             aes(x = homeownership, y = poverty, group = metro)) +
-            geom_smooth(method = "loess", se = FALSE, color = "blue") +
+            geom_smooth(formula = y ~ x, method = "loess", se = FALSE, color = "blue") +
             geom_point() +
             labs(title = "Plot D")
 plot5 <- ggplot(county %>% filter(!is.na(poverty)), 
             aes(x = homeownership, 
                 y = poverty, 
-                group = metro, 
                 linetype = metro, 
                 color = metro)) +
             geom_point() +
-            geom_smooth(method = "loess", se = FALSE, color = "blue") +
+            geom_smooth(formula = y ~ x, method = "loess", se = FALSE, color = "blue") +
             labs(title = "Plot E")
 plot6 <- ggplot(county %>% filter(!is.na(poverty)), 
             aes(x = homeownership, 
-                y = poverty, 
-                group = metro, 
+                y = poverty,
                 color = metro)) +
             geom_point() +
-            geom_smooth(method = "loess", se = FALSE) +
+            geom_smooth(formula = y ~ x, method = "loess", se = FALSE) +
             labs(title = "Plot F")
 plot7 <- ggplot(county %>% filter(!is.na(poverty)), 
             aes(x = homeownership, 
                 y = poverty, 
                 color = metro)) +
             geom_point() +
-            geom_smooth(method = "loess", se = FALSE, aes(group = "all")) +
+            geom_smooth(formula = y ~ x, method = "loess", se = FALSE, aes(group = "all")) +
             labs(title = "Plot G")
 plot8 <- ggplot(county %>% filter(!is.na(poverty)), 
             aes(x = homeownership, 
@@ -285,12 +229,12 @@ grid.arrange(plot1, plot2, plot3, plot4, plot5, plot6, plot7, plot8, ncol=2, nro
 ## 4 - Credit card balances
 
 ```{r}
-credit_data <- read_csv("/cloud/project/data/credit.csv")
+credit_data <- read_csv("/cloud/project/data/credit.csv", show_col_types = FALSE)
 ggplot2::theme_set(ggplot2::theme_minimal(base_size = 14))
 ggplot(credit_data, 
             aes(x = income, y = balance, color=student, shape = student)) +
             geom_point() +
-            geom_smooth(method = "lm", se = FALSE) + 
+            geom_smooth(formula = y ~ x, method = "lm", se = FALSE) + 
             facet_grid(student ~ married,
                        labeller = label_both) +
             scale_shape_manual(values = c("circle", "triangle")) +
@@ -311,7 +255,7 @@ credit_data <- credit_data |>
 ggplot(credit_data, 
             aes(x = income, y = credid_utilization, color=student, shape = student)) +
             geom_point() +
-            geom_smooth(method = "lm", se = FALSE) + 
+            geom_smooth(method = "lm", se = FALSE, formula = y ~ x) + 
             facet_grid(student ~ married,
                        labeller = label_both) +
             scale_shape_manual(values = c("circle", "triangle")) +
@@ -332,20 +276,9 @@ napoleon_data  <- read_rds("/cloud/project/data/napoleon.rds")
 
 ```
 
-```{r}
-# In this problem, I answered the question with the help of:
-# http://euclid.psych.yorku.ca/www/psy6135/tutorials/Minard.html
-```
+In this problem, I answered the question with the help of <http://euclid.psych.yorku.ca/www/psy6135/tutorials/Minard.html>
 
-```{r}
-library(ggplot2)
-library(scales)        # additional formatting for scales
-library(grid)          # combining plots
-library(gridExtra)     # combining plots
-library(dplyr)         # tidy data manipulations
-library(ggrepel)
-# In this cell, we start by pulling the libraries that will be used.
-```
+In this cell, we start by pulling the libraries that will be used.
 
 ```{r fig.height=3.5, fig.width=10}
 ggplot(napoleon_data$troop, aes(long, lat)) + 
@@ -412,8 +345,4 @@ grid.rect(width = .99, height = .99,
 
 ```
 
-```{r}
-# Ultimately this was a very nice problem to solve, I wanted to add a geographical map
-# to it, but I will not have to time to figure out why ggmap was not able to insert the
-# map
-```
+Ultimately this was a very nice problem to solve, I wanted to add a geographical map to it, but I will not have to time to figure out why ggmap was not able to insert the map.
